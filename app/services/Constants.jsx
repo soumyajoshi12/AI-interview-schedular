@@ -1,4 +1,4 @@
-import { Calendar, LayoutDashboard, List, Settings, WalletCards } from "lucide-react";
+import { Briefcase, Calendar, Code, Crown, LayoutDashboard, List, Puzzle, Settings, Users, WalletCards } from "lucide-react";
 
 export const DashboardOptions = [
     {
@@ -26,4 +26,12 @@ export const DashboardOptions = [
         icon:Settings,
         path:'/setting'
     },
+]
+
+export const JOB_TYPES = [
+  { type: 'Technical', icon: Code },
+  { type: 'Behaviour', icon: Users },
+  { type: 'Experience', icon: Briefcase },
+  { type: 'Problem Solving', icon: Puzzle },
+  { type: 'Leadership', icon: Crown },
 ]
