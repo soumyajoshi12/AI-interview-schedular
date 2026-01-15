@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import InterviewForm from './_components/InterviewForm'
 import { Progress } from '@/components/ui/progress'
-import QuestionList from '../_components/QuestionList'
+import QuestionList from './_components/QuestionList'
 
 const page = () => {
     const [progress, setProgress] = useState(1)
