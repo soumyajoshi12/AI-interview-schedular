@@ -6,10 +6,12 @@ import React, { useEffect, useState } from 'react'
 import InterviewForm from './_components/InterviewForm'
 import { Progress } from '@/components/ui/progress'
 import QuestionList from './_components/QuestionList'
+import InterviewLink from './_components/InterviewLink'
 
 const page = () => {
     const [progress, setProgress] = useState(1)
     const [formData, setformData] = useState();
+    const [interviewId, setInterviewId] = useState()
     const router = useRouter()
 
     const onHandleInputChange = (field, value) => {
@@ -26,10 +28,15 @@ const page = () => {
     }, [formData])
 
     const GotoNext = () => {
-        if(!formData?.jobPosition || !formData?.jobDescription || !formData?.duration || !formData?.type){
-            return ;
+        if (!formData?.jobPosition || !formData?.jobDescription || !formData?.duration || !formData?.type) {
+            return;
         }
-        setProgress(progress+1)
+        setProgress(progress + 1)
+    }
+
+    const goToFinalStep = (interview_id) => {
+        setProgress(progress + 1)
+        setInterviewId(interview_id)
     }
 
     return (
@@ -42,13 +49,21 @@ const page = () => {
             {progress === 1 && (
                 <InterviewForm
                     onHandleInputChange={onHandleInputChange}
-                    GotoNext = {GotoNext}
+                    GotoNext={GotoNext}
                 />
             )}
 
             {progress === 2 && (
                 <QuestionList
                     formData={formData}
+                    goToFinalStep={goToFinalStep}
+                />
+            )}
+
+            {progress === 3 && (
+                <InterviewLink
+                    // formData={formData}
+                    interviewId={interviewId}
                 />
             )}
         </div>
