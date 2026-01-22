@@ -1,18 +1,21 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/app/services/supabaseClient'
+import { InterviewDetailsContext } from '@/context/InterviewDetails'
 
 const InterviewId = () => {
 
   const [interviewDetails, setInterviewDetails] = useState()
   const { interviewId } = useParams()
-  console.log(interviewId)
+  const router = useRouter()
+  const [userName, setUserName] = useState('')
+  const {interviewDetail, setInterviewDetail} = useContext(InterviewDetailsContext)
 
   useEffect(() => {
     interviewId && GetInterviewDetails()
@@ -26,6 +29,18 @@ const InterviewId = () => {
 
     console.log(Interviews)
     setInterviewDetails(Interviews[0])
+  }
+
+  const handleJoinInterview = () => {
+    if(!interviewDetails) return
+    console.log("interviewDetailsinterviewDetails",interviewDetails)
+    setInterviewDetail(
+      {
+        userName : userName,
+        interviewDetails : interviewDetails
+      }
+    )
+    router.push('/interview/'+interviewId+'/start')
   }
 
   return (
@@ -47,7 +62,7 @@ const InterviewId = () => {
         />
         <div className='mt-5'>
           <label>Enter Your full name</label>
-          <Input placeholder="e.g.Soumya Joshi" />
+          <Input placeholder="e.g.Soumya Joshi" value={userName} onChange = {(e)=>setUserName(e.target.value)} />
           <div className='mt-4 bg-gray-300 p-2 rounded-md'>
             <h4 className='flex font-bold gap-2'><Info />Before You Login</h4>
             <ul className='ml-8 text-sm'>
@@ -56,7 +71,7 @@ const InterviewId = () => {
               <li>Find a quite place</li>
             </ul>
           </div>
-          <Button className='mt-5 w-full'>Join Interview</Button>
+          <Button onClick={handleJoinInterview} className='mt-5 w-full'>Join Interview</Button>
         </div>
       </div>
     </div>

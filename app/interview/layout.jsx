@@ -1,12 +1,18 @@
-import React from 'react'
-import InterviewHeader from './_components/InterviewHeader'
+'use client'
 
-const InterviewLayout = ({children}) => {
+import React, { useState } from 'react'
+import InterviewHeader from './_components/InterviewHeader'
+import { InterviewDetailsContext } from '@/context/InterviewDetails'
+
+const InterviewLayout = ({ children }) => {
+  const [interviewDetail, setInterviewDetail] = useState()
   return (
-    <div>
-      <InterviewHeader/>
+    <InterviewDetailsContext.Provider value={{ interviewDetail, setInterviewDetail }}>
+      <div>
+        <InterviewHeader />
         {children}
-    </div>
+      </div>
+    </InterviewDetailsContext.Provider>
   )
 }
 
