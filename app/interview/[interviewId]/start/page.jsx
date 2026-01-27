@@ -3,131 +3,218 @@
 import { InterviewDetailsContext } from '@/context/InterviewDetails'
 import { Mic, Phone, Timer } from 'lucide-react'
 import Image from 'next/image'
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import Vapi from '@vapi-ai/web'
+import React, { useContext, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'; // Added for redirection
+import Vapi from '@vapi-ai/web';
 import AlertDialogBox from './_components/AlertDialogBox'
 
-const Page = () => {
-  const { interviewDetail } = useContext(InterviewDetailsContext)
+const page = () => {
+    const { interviewDetail } = useContext(InterviewDetailsContext)
+    const router = useRouter(); // Added for navigation
+    const [vapi, setVapi] = useState(null); // Store Vapi instance
+    const [isCallActive, setIsCallActive] = useState(false); // Track if call is ongoing
+    const [isMuted, setIsMuted] = useState(false); // Track mute status
+    const [elapsedTime, setElapsedTime] = useState(0); // Timer in seconds
+    const [timerInterval, setTimerInterval] = useState(null); // Interval for timer
 
-  const vapiRef = useRef(null)
-  const [callActive, setCallActive] = useState(false)
-  const [seconds, setSeconds] = useState(0)
+    // Initialize Vapi on component mount
+    useEffect(() => {
+        console.log('API Key loaded:', process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY ? 'Yes' : 'No'); // Debug: Remove in production
+        const vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY);
+        setVapi(vapiInstance);
 
-  /* ---------------- TIMER ---------------- */
-  useEffect(() => {
-    if (!callActive) return
+        // Set up event listeners
+        vapiInstance.on('call-start', () => {
+            console.log('Call started');
+            setIsCallActive(true);
+            startTimer(); // Start the timer
+        });
 
-    const timer = setInterval(() => {
-      setSeconds(prev => prev + 1)
-    }, 1000)
+        vapiInstance.on('call-end', () => {
+            console.log('Call ended');
+            setIsCallActive(false);
+            stopTimer(); // Stop the timer
+            setElapsedTime(0); // Reset timer
+            router.push('/dashboard'); // Redirect to dashboard on call end
+        });
 
-    return () => clearInterval(timer)
-  }, [callActive])
+        vapiInstance.on('error', (error) => {
+            console.error('Vapi error:', error);
+            alert('An error occurred during the interview. Please try again.');
+        });
 
-  const formatTime = () => {
-    const mins = String(Math.floor(seconds / 60)).padStart(2, '0')
-    const secs = String(seconds % 60).padStart(2, '0')
-    return `${mins}:${secs}`
-  }
+        // Optional: Handle speech events for UI feedback
+        vapiInstance.on('speech-start', () => {
+            console.log('AI is speaking');
+            // You could update UI here, e.g., show "AI speaking" indicator
+        });
 
-  /* ---------------- VAPI SETUP ---------------- */
-  useEffect(() => {
-    vapiRef.current = new Vapi(
-      process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY
-    )
+        return () => {
+            // Cleanup on unmount
+            if (vapiInstance) {
+                vapiInstance.stop();
+            }
+        };
+    }, [router]); // Added router to dependencies
 
-    vapiRef.current.on('call-start', () => {
-      console.log('Interview started')
-      setCallActive(true)
-      setSeconds(0)
-    })
+    // Auto-start the interview once Vapi is initialized
+    useEffect(() => {
+        if (vapi) {
+            startInterview(); // Automatically start the interview
+        }
+    }, [vapi]); // Runs when vapi is set
 
-    vapiRef.current.on('call-end', () => {
-      console.log('Interview ended')
-      setCallActive(false)
-    })
+    const startInterview = async () => {
+        if (!vapi) return;
+console.log("interviewDetailinterviewDetailinterviewDetail:::",interviewDetail)
+        // Build dynamic content (ensure questionLists and jobPosition are available)
+        const questionLists = interviewDetail?.interviewDetails?.questionLists || [];
+        const questionsString = questionLists.map((q, i) => `${i + 1}. ${q}`).join(' ');
+        const dynamicContent = `
+    Your job is to ask candidates provided interview questions, assess their responses.
 
-    vapiRef.current.on('error', (e) => {
-      console.error('Vapi error:', e)
-      setCallActive(false)
-    })
+    You are an AI voice assistant conducting interviews.
 
-    return () => {
-      vapiRef.current?.stop()
-    }
-  }, [])
+    Begin the conversation with a friendly introduction, setting a relaxed yet professional tone. Example:
+    "Hey there! Welcome to your ${interviewDetail?.interviewDetails?.jobPosition} interview. Let's get started with a few questions!"
 
-const startInterview = async () => {
-  try {
-    await vapiRef.current.start({
-      assistant: {
-        id: '3644cd7c-2fdd-4d5e-bc59-35bb990c2adc'
-      }
-    })
-  } catch (err) {
-    console.error('Start failed:', err)
-  }
-}
+    Ask one question at a time and wait for the candidate's response before proceeding.
+    Keep the questions clear and concise.
 
+    Below are the questions, ask one by one:
+    Questions: ${questionsString}
 
+    If the candidate struggles, offer hints or rephrase the question without giving away the answer.
+    Example: "Need a hint? Think about how React tracks component updates!"
 
-  const stopInterview = () => {
-    vapiRef.current.stop()
-  }
+    Provide brief, encouraging feedback after each answer.
+    Example: "Nice! That's a solid answer."
 
-  /* ---------------- UI ---------------- */
-  return (
-    <div className='py-10 px-20'>
-      <div className='flex w-full justify-between'>
-        <h2 className='text-lg font-bold'>AI Interview Session</h2>
-        <span className='flex gap-2'><Timer />{formatTime()}</span>
-      </div>
+    Keep the conversation natural and engaging—use casual phrases like:
+    "Alright, next up..." or "Let's tackle a tricky one!"
+    "Hmm, not quite! Want to try again?"
 
-      <div className='grid grid-cols-2 gap-8 mt-5'>
-        <div className='bg-gray-100 rounded-lg p-40 flex flex-col items-center'>
-          <Image
-            src='/login.png'
-            alt='AI'
-            width={70}
-            height={70}
-            className='rounded-full'
-          />
-          <h2 className='mt-2'>AI Recruiter</h2>
-        </div>
+    After 5–7 questions, wrap up the interview smoothly by summarizing their performance.
+    Example: "That was great! You handled some tough questions well. Keep sharpening your skills!"
 
-        <div className='bg-gray-100 rounded-lg p-40 flex flex-col items-center'>
-          <div className='text-lg bg-gray-900 text-white w-[70px] h-[70px] rounded-full flex items-center justify-center'>
-            {interviewDetail?.userName?.[0]}
-          </div>
-          <h2 className='mt-2'>{interviewDetail?.userName}</h2>
-        </div>
-      </div>
+    End on a positive note:
+    "Thanks for chatting! Hope to see you crushing projects soon!"
 
-      <div className='flex gap-6 mt-5 justify-center'>
-        {!callActive ? (
-          <button
-            onClick={startInterview}
-            className='w-[50px] h-[50px] bg-green-700 text-white rounded-full flex items-center justify-center'
-          >
-            <Mic />
-          </button>
-        ) : (
-          <AlertDialogBox stopInterview={stopInterview}>
-            <div className='w-[50px] h-[50px] bg-red-700 text-white rounded-full flex items-center justify-center cursor-pointer'>
-              <Phone />
+    Key Guidelines:
+    - Be friendly, engaging, and witty
+    - Keep responses short and natural, like a real conversation
+    - Adapt based on the candidate's confidence level
+    - Ensure the interview remains focused on React
+    `;
+
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            await vapi.start('3644cd7c-2fdd-4d5e-bc59-35bb990c2adc', {
+                model: {
+                    provider: 'openai',
+                    model: 'gpt-4o',
+                    messages: [
+                        {
+                            role: 'system',
+                            content: dynamicContent
+                        }
+                    ]
+                }
+            });
+        } catch (error) {
+            console.error('Failed to start interview:', error);
+            alert(`Failed to start the interview: ${error.message || 'Unknown error'}. Check your API key and assistant ID.`);
+        }
+    };
+
+    const stopInterview = async () => {
+        if (!vapi) return;
+        try {
+            await vapi.stop();
+        } catch (error) {
+            console.error('Failed to stop interview:', error);
+        }
+    };
+
+    // Toggle mute
+    const toggleMute = async () => {
+        if (!vapi || !isCallActive) return;
+        try {
+            if (isMuted) {
+                await vapi.unmute();
+                setIsMuted(false);
+            } else {
+                await vapi.mute();
+                setIsMuted(true);
+            }
+        } catch (error) {
+            console.error('Mute toggle failed:', error);
+        }
+    };
+
+    // Timer functions
+    const startTimer = () => {
+        const interval = setInterval(() => {
+            setElapsedTime((prev) => prev + 1);
+        }, 1000);
+        setTimerInterval(interval);
+    };
+
+    const stopTimer = () => {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            setTimerInterval(null);
+        }
+    };
+
+    // Format timer as MM:SS
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <div className='py-10 px-20'>
+            <div className='flex w-full justify-between'>
+                <h2 className='text-lg font-bold'>AI Interview session</h2>
+                <span className='flex gap-2'><Timer />{formatTime(elapsedTime)}</span>
             </div>
-          </AlertDialogBox>
-        )}
-      </div>
+            <div className='grid grid-cols-2 flex gap-8 mt-5'>
+                <div className='bg-gray-100 rounded-lg p-40 flex flex-col gap-2 items-center justify-center'>
+                    <Image src='/login.png' alt='imgAI' width={100} height={100} className='w-[70px] h-[70px] rounded-full object-fit' />
+                    <h2>AI Recruiter</h2>
+                </div>
+                <div className='bg-gray-100 rounded-lg p-40 flex-col flex items-center justify-center'>
+                    <div className='text-lg flex items-center justify-center text-white bg-gray-900 w-[70px] h-[70px] rounded-full'>
+                        {interviewDetail?.userName[0]}
+                    </div>
+                    <h2>{interviewDetail?.userName}</h2>
+                </div>
+            </div>
+            <div className='flex gap-15 mt-5 w-full justify-center'>
+                {/* Mic button for mute/unmute */}
+                <button
+                    onClick={toggleMute}
+                    disabled={!isCallActive}
+                    className={`w-[50px] h-[50px] ${isMuted ? 'bg-gray-500' : 'bg-gray-800'} text-white rounded-full flex items-center justify-center`}
+                >
+                    <Mic />
+                </button>
 
-      <div className='flex flex-col items-center mt-3'>
-        <h2 className='text-gray-400'>
-          {callActive ? 'Interview in Progress...' : 'Click mic to start interview'}
-        </h2>
-      </div>
-    </div>
-  )
+                {/* Phone button for end call, wrapped in AlertDialogBox */}
+                <AlertDialogBox stopInterview={stopInterview}>
+                    <div className='w-[50px] h-[50px] bg-red-800 text-white rounded-full flex items-center justify-center'>
+                        <Phone />
+                    </div>
+                </AlertDialogBox>
+            </div>
+            <div className='flex flex-col items-center mt-3'>
+                {/* Always show "Interview In Progress..." since it auto-starts */}
+                <h2 className='text-gray-400'>Interview In Progress...</h2>
+            </div>
+        </div>
+    )
 }
 
-export default Page
+export default page
