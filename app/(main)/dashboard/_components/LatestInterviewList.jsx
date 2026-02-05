@@ -1,10 +1,12 @@
 "use client"
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
 const LatestInterviewList = () => {
   const [interviews, setInterviews] = useState([])
+  const router = useRouter()
 
   return (
     <div className='mt-5'>
@@ -18,7 +20,7 @@ const LatestInterviewList = () => {
           <p className='text-gray-500 mb-3'>
             No interviews created yet
           </p>
-          <Button className='px-4 py-2 text-white rounded'>
+          <Button className='px-4 py-2 text-white rounded' onClick = {() => router.push('/dashboard/create-interview')}>
            <Plus/> Create New Interview
           </Button>
         </div>

@@ -15,6 +15,7 @@ const InterviewId = () => {
   const { interviewId } = useParams()
   const router = useRouter()
   const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
   const {interviewDetail, setInterviewDetail} = useContext(InterviewDetailsContext)
 
   useEffect(() => {
@@ -37,6 +38,7 @@ const InterviewId = () => {
     setInterviewDetail(
       {
         userName : userName,
+        userEmail: userEmail,
         interviewDetails : interviewDetails
       }
     )
@@ -63,6 +65,7 @@ const InterviewId = () => {
         <div className='mt-5'>
           <label>Enter Your full name</label>
           <Input placeholder="e.g.Soumya Joshi" value={userName} onChange = {(e)=>setUserName(e.target.value)} />
+          <Input placeholder="e.g.soumya@gmail.com" value={userEmail} onChange = {(e)=>setUserEmail(e.target.value)} className='mt-2'/>
           <div className='mt-4 bg-gray-300 p-2 rounded-md'>
             <h4 className='flex font-bold gap-2'><Info />Before You Login</h4>
             <ul className='ml-8 text-sm'>
