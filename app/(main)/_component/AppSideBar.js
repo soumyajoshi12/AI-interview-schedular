@@ -14,11 +14,12 @@ import {
 } from "@/components/ui/sidebar"
 import { Plus } from "lucide-react"
 import { DashboardOptions } from '@/app/services/Constants'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 
 export function AppSidebar() {
     const pathname = usePathname()
+    const router = useRouter()
   return (
     <Sidebar>
       {/* Header */}
@@ -29,7 +30,7 @@ export function AppSidebar() {
           SCHEDULE<span className="text-gray-400">-</span>INTERVIEW
         </h1>
 
-        <Button className="m-3 w-full">
+        <Button className="m-3 w-full" onClick = {() => router.push('/dashboard/create-interview')}>
           <Plus className="mr-2 h-4 w-4" />
           Create New Interview
         </Button>
