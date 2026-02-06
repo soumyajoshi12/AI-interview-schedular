@@ -7,6 +7,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'; // Added for redirection
 import Vapi from '@vapi-ai/web';
 import AlertDialogBox from './_components/AlertDialogBox'
+import axios from 'axios'
 
 const page = () => {
     const { interviewDetail } = useContext(InterviewDetailsContext)
@@ -16,6 +17,7 @@ const page = () => {
     const [isMuted, setIsMuted] = useState(false); // Track mute status
     const [elapsedTime, setElapsedTime] = useState(0); // Timer in seconds
     const [timerInterval, setTimerInterval] = useState(null); // Interval for timer
+    const [conversation, setConversation] = useState()
 
     // Initialize Vapi on component mount
     useEffect(() => {
@@ -35,6 +37,7 @@ const page = () => {
             setIsCallActive(false);
             stopTimer(); // Stop the timer
             setElapsedTime(0); // Reset timer
+            generateFeedback()
             router.push('/dashboard'); // Redirect to dashboard on call end
         });
 
@@ -49,6 +52,11 @@ const page = () => {
             // You could update UI here, e.g., show "AI speaking" indicator
         });
 
+        vapiInstance.on("message", (message) => {
+            console.log(message)
+            setConversation(message?.conversation)
+        })
+
         return () => {
             // Cleanup on unmount
             if (vapiInstance) {
@@ -56,6 +64,15 @@ const page = () => {
             }
         };
     }, [router]); // Added router to dependencies
+
+    const generateFeedback = async () => {
+        debugger
+        const result = await axios.post("/api/ai-feedback",{
+            conversation:conversation
+        })
+
+        console.log("feedback")
+    }
 
     // Auto-start the interview once Vapi is initialized
     useEffect(() => {
@@ -66,7 +83,7 @@ const page = () => {
 
     const startInterview = async () => {
         if (!vapi) return;
-console.log("interviewDetailinterviewDetailinterviewDetail:::",interviewDetail)
+        console.log("interviewDetailinterviewDetailinterviewDetail:::", interviewDetail)
         // Build dynamic content (ensure questionLists and jobPosition are available)
         const questionLists = interviewDetail?.interviewDetails?.questionLists || [];
         const questionsString = questionLists.map((q, i) => `${i + 1}. ${q}`).join(' ');
