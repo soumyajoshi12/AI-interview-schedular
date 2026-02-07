@@ -3,7 +3,7 @@
 import { InterviewDetailsContext } from '@/context/InterviewDetails'
 import { Mic, Phone, Timer } from 'lucide-react'
 import Image from 'next/image'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'; // Added for redirection
 import Vapi from '@vapi-ai/web';
 import AlertDialogBox from './_components/AlertDialogBox'
@@ -18,6 +18,7 @@ const page = () => {
     const [elapsedTime, setElapsedTime] = useState(0); // Timer in seconds
     const [timerInterval, setTimerInterval] = useState(null); // Interval for timer
     const [conversation, setConversation] = useState()
+    const conversationRef = useRef([]);
 
     // Initialize Vapi on component mount
     useEffect(() => {
@@ -53,8 +54,11 @@ const page = () => {
         });
 
         vapiInstance.on("message", (message) => {
-            console.log(message)
-            setConversation(message?.conversation)
+            console.log(message?.conversation)
+            if (message?.conversation) {
+                conversationRef.current = message.conversation;  // Update the ref with the latest data
+                setConversation(message.conversation)  // Still update state for UI if needed
+            }
         })
 
         return () => {
@@ -65,14 +69,25 @@ const page = () => {
         };
     }, [router]); // Added router to dependencies
 
-    const generateFeedback = async () => {
-        debugger
-        const result = await axios.post("/api/ai-feedback",{
-            conversation:conversation
-        })
+    useEffect(() => {
+        console.log("Conversation state updated:", conversation);
+    }, [conversation]);
 
-        console.log("feedback")
-    }
+    const generateFeedback = async () => {
+        try {
+            const result = await axios.post("/api/ai-feedback", {
+                conversation: conversationRef.current
+            });
+            console.log("Parsed feedback:", result.data);
+            const Content = result.data  // Now it's an object like { feedback: {...} }
+            const Final_content = Content.replace('```json','').replace('```','')
+            // Example: Access specific parts
+            console.log("Rating:", rating);
+            // Optionally: Display in UI, save to DB, etc.
+        } catch (error) {
+            console.error("Error:", error.response?.data?.error || error.message);
+        }
+    };
 
     // Auto-start the interview once Vapi is initialized
     useEffect(() => {

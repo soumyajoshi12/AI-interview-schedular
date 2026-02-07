@@ -72,30 +72,25 @@ type:'Technical/Behavioral/Experince/Problem Solving/Leaseship'
 
 The goal is to create a structured, relevant, and time-optimized interview plan for a {{jobTitle}} role.`
 
-export const FEEDBACK_PROMT = `{{conversation}}
+export const FEEDBACK_PROMT = `
+Depends on this Interview Conversation between assistant and user,
 
-Depends on this Interview Conversation between assitant and user,
+Give me feedback for user interview. Give me rating out of 10 for technical Skills, Communication, Problem Solving, Experience. Also give me summary in 3 lines about the interview and one line to let me know whether is recommended for hire or not with msg. Give me response in JSON format only, with no additional text or explanations.
 
-Give me feedback for user interview. Give me rating out of 10 for technical Skills, Communication, Problem Solving, Experince. Also give me summery in 3 lines about the interview and one line to let me know whether is recommanded for hire or not with msg. Give me response in JSON format {
-
-feedback:{
-
-rating:{
-
-},
-
-techical Skills:5,
-
-communication:6,
-
-problem Solving:4,
-
-experince:7
-
-summery:<in 3 Line>, Recommendation:",
-
-RecommendationMsg:"
-
+Example structure:
+{
+  "feedback": {
+    "rating": {
+      "technicalSkills": 5,
+      "communication": 6,
+      "problemSolving": 4,
+      "experience": 7
+    },
+    "summary": "Summary in 3 lines here.",
+    "recommendation": "Recommended/Not recommended",
+    "recommendationMsg": "One-line message here."
+  }
 }
 
-}`
+Conversation: {{conversation}}
+`;
