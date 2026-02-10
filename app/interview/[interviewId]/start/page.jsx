@@ -4,10 +4,11 @@ import { InterviewDetailsContext } from '@/context/InterviewDetails'
 import { Mic, Phone, Timer } from 'lucide-react'
 import Image from 'next/image'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'; // Added for redirection
+import { useParams, useRouter } from 'next/navigation'; // Added for redirection
 import Vapi from '@vapi-ai/web';
 import AlertDialogBox from './_components/AlertDialogBox'
 import axios from 'axios'
+import { supabase } from '@/app/services/supabaseClient'
 
 const page = () => {
     const { interviewDetail } = useContext(InterviewDetailsContext)
@@ -19,6 +20,7 @@ const page = () => {
     const [timerInterval, setTimerInterval] = useState(null); // Interval for timer
     const [conversation, setConversation] = useState()
     const conversationRef = useRef([]);
+    const { interviewId } = useParams()
 
     // Initialize Vapi on component mount
     useEffect(() => {
@@ -39,7 +41,7 @@ const page = () => {
             stopTimer(); // Stop the timer
             setElapsedTime(0); // Reset timer
             generateFeedback()
-            router.push('/dashboard'); // Redirect to dashboard on call end
+            // router.push('/dashboard'); // Redirect to dashboard on call end
         });
 
         vapiInstance.on('error', (error) => {
@@ -75,15 +77,32 @@ const page = () => {
 
     const generateFeedback = async () => {
         try {
+            debugger
             const result = await axios.post("/api/ai-feedback", {
                 conversation: conversationRef.current
             });
             console.log("Parsed feedback:", result.data);
             const Content = result.data  // Now it's an object like { feedback: {...} }
-            const Final_content = Content.replace('```json','').replace('```','')
-            // Example: Access specific parts
-            console.log("Rating:", rating);
-            // Optionally: Display in UI, save to DB, etc.
+            const Final_content = Content.replace('```json', '').replace('```', '')
+            console.log("Final_contentFinal_content", Final_content)
+
+            const { data, error } = await supabase
+                .from('interview-feedback')
+                .insert([
+                    {
+                        userName: interviewDetail?.userName,
+                        userEmail: interviewDetail?.userEmail,
+                        interview_id: interviewId,
+                        feedback: JSON.parse(Final_content),
+                        recommended: false
+                    },
+                ])
+                .select()
+
+                console.log("datadatafeed",data)
+
+                router.replace('/interview/'+ interviewId + '/completed')
+
         } catch (error) {
             console.error("Error:", error.response?.data?.error || error.message);
         }
