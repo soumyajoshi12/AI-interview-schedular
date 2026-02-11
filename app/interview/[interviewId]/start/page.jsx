@@ -21,6 +21,8 @@ const page = () => {
     const [conversation, setConversation] = useState()
     const conversationRef = useRef([]);
     const { interviewId } = useParams()
+    const [isCallEnding, setIsCallEnding] = useState(false); // New state for loading during call end and feedback generation
+    const [isStartingCall, setIsStartingCall] = useState(false); // New state for loading during call start
 
     // Initialize Vapi on component mount
     useEffect(() => {
@@ -32,6 +34,7 @@ const page = () => {
         vapiInstance.on('call-start', () => {
             console.log('Call started');
             setIsCallActive(true);
+            setIsStartingCall(false); // Stop loading when call starts
             startTimer(); // Start the timer
         });
 
@@ -40,6 +43,7 @@ const page = () => {
             setIsCallActive(false);
             stopTimer(); // Stop the timer
             setElapsedTime(0); // Reset timer
+            setIsCallEnding(true); // Start loading for feedback generation
             generateFeedback()
             // router.push('/dashboard'); // Redirect to dashboard on call end
         });
@@ -47,6 +51,8 @@ const page = () => {
         vapiInstance.on('error', (error) => {
             console.error('Vapi error:', error);
             alert('An error occurred during the interview. Please try again.');
+            setIsStartingCall(false); // Stop loading on error
+            setIsCallEnding(false); // Stop loading on error
         });
 
         // Optional: Handle speech events for UI feedback
@@ -77,7 +83,6 @@ const page = () => {
 
     const generateFeedback = async () => {
         try {
-            debugger
             const result = await axios.post("/api/ai-feedback", {
                 conversation: conversationRef.current
             });
@@ -101,10 +106,12 @@ const page = () => {
 
                 console.log("datadatafeed",data)
 
+                setIsCallEnding(false); // Stop loading before redirect
                 router.replace('/interview/'+ interviewId + '/completed')
 
         } catch (error) {
             console.error("Error:", error.response?.data?.error || error.message);
+            setIsCallEnding(false); // Stop loading on error
         }
     };
 
@@ -117,6 +124,7 @@ const page = () => {
 
     const startInterview = async () => {
         if (!vapi) return;
+        setIsStartingCall(true); // Start loading when starting interview
         console.log("interviewDetailinterviewDetailinterviewDetail:::", interviewDetail)
         // Build dynamic content (ensure questionLists and jobPosition are available)
         const questionLists = interviewDetail?.interviewDetails?.questionLists || [];
@@ -175,6 +183,7 @@ const page = () => {
         } catch (error) {
             console.error('Failed to start interview:', error);
             alert(`Failed to start the interview: ${error.message || 'Unknown error'}. Check your API key and assistant ID.`);
+            setIsStartingCall(false); // Stop loading on error
         }
     };
 
@@ -224,6 +233,23 @@ const page = () => {
         const secs = seconds % 60;
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
+
+    // Loading component
+    const LoadingSpinner = ({ message }) => (
+        <div className='flex flex-col items-center justify-center h-full'>
+            <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900'></div>
+            <p className='mt-4 text-lg'>{message}</p>
+        </div>
+    );
+
+    // Show loading if starting call or ending call
+    if (isStartingCall || isCallEnding) {
+        return (
+            <div className='py-10 px-20 h-screen flex items-center justify-center'>
+                <LoadingSpinner message={isStartingCall ? "Starting Interview..." : "Generating Feedback..."} />
+            </div>
+        );
+    }
 
     return (
         <div className='py-10 px-20'>
