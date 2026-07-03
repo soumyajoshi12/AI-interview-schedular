@@ -81,6 +81,7 @@ const page = () => {
         console.log("Conversation state updated:", conversation);
     }, [conversation]);
 
+    console.log("interviewDetailinterviewDetail",interviewDetail)
     const generateFeedback = async () => {
         try {
             const result = await axios.post("/api/ai-feedback", {

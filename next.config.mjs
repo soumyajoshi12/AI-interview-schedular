@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   reactStrictMode: false,
   images: {
-    domains: ['images.rawpixel.com'],
+    domains: [
+      "images.rawpixel.com",
+      "lh3.googleusercontent.com",
+    ],
   },
 };
 

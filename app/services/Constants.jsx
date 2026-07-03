@@ -14,7 +14,7 @@ export const DashboardOptions = [
      {
         name:'All Interviews',
         icon:List,
-        path:'/all-interview'
+        path:'/all-interviews'
     },
      {
         name:'Billing',

@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from "@/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +14,7 @@ import {
 import { Plus } from "lucide-react"
 import { DashboardOptions } from '@/app/services/Constants'
 import { usePathname, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 
 
 export function AppSidebar() {
