@@ -22,6 +22,8 @@ const InterviewId = () => {
     interviewId && GetInterviewDetails()
   }, [interviewId])
 
+  console.log('interviewId',interviewId)
+
   const GetInterviewDetails = async () => {
     let { data: Interviews, error } = await supabase
       .from('Interviews')

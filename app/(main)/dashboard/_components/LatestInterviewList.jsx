@@ -1,12 +1,33 @@
 "use client"
+import { supabase } from '@/app/services/supabaseClient'
 import { Button } from '@/components/ui/button'
+import { useUser } from '@/context/UserDetailContext'
 import { Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import InterviewCard from './InterviewCard'
 
 const LatestInterviewList = () => {
   const [interviews, setInterviews] = useState([])
   const router = useRouter()
+  const { user } = useUser()
+
+  const GetInterviewList = async () => {
+
+    let { data: Interviews, error } = await supabase
+      .from('Interviews')
+      .select('*')
+      .eq('userEmail',user?.email)
+      .order('id',{ascending:false})
+      .limit(6)
+      setInterviews(Interviews)
+
+  }
+
+  useEffect(() => {
+    user && GetInterviewList()
+  }, [user])
+
 
   return (
     <div className='mt-5'>
@@ -20,25 +41,14 @@ const LatestInterviewList = () => {
           <p className='text-gray-500 mb-3'>
             No interviews created yet
           </p>
-          <Button className='px-4 py-2 text-white rounded' onClick = {() => router.push('/dashboard/create-interview')}>
-           <Plus/> Create New Interview
+          <Button className='px-4 py-2 text-white rounded' onClick={() => router.push('/dashboard/create-interview')}>
+            <Plus /> Create New Interview
           </Button>
         </div>
       ) : (
-        /* If interviews exist */
-        <div className='space-y-3'>
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
           {interviews.map((interview, index) => (
-            <div
-              key={index}
-              className='w-full border rounded-lg p-4'
-            >
-              <h3 className='font-medium'>
-                {interview.title}
-              </h3>
-              <p className='text-sm text-gray-500'>
-                {interview.date}
-              </p>
-            </div>
+            <InterviewCard interview={interview} key={index} />
           ))}
         </div>
       )}

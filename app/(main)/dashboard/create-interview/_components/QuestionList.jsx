@@ -60,12 +60,13 @@ const QuestionList = ({ formData ,goToFinalStep}) => {
   }
 
   const interview_id = uuidv4()
+  
 
   const onFinish = async () => {
     const { data, error } = await supabase
       .from('Interviews')
       .insert([
-        { ...formData, questionList: questionList, userEmail: user?.email, interview_id: interview_id }
+        { ...formData, questionList: questionList, userName: user?.user?.name, userEmail: user?.user?.email, interview_id: interview_id }
       ])
       .select()
 
