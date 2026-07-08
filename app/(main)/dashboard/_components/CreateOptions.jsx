@@ -1,10 +1,14 @@
+'use client'
+
 import { Camera, Phone, Video } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const CreateOptions = () => {
+    const router = useRouter()
     return (
         <div className='grid grid-cols-2 gap-4 mt-5'>
-            <div className="bg-white flex flex-col p-6 gap-2 rounded-lg shadow-sm">
+            <div onClick = {() => router.push('/dashboard/create-interview')} className="bg-white flex flex-col p-6 gap-2 rounded-lg shadow-sm">
                 <div className='bg-secondary p-3 rounded-lg w-fit'><Video /></div>
                 <h3 className='text-md font-semibold'>Create New Interview</h3>
                 <p className="mt-1 text-sm text-gray-600">Create AI interview and schedule it with candidates</p>

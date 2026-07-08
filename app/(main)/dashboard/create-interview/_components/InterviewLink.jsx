@@ -7,7 +7,7 @@ const InterviewLink = ({ interviewId }) => {
     console.log("int", interviewId)
 
     const GetInterviewLink = () => {
-        const url = process.env.NEXT_PUBLIC_INTERVIEW_URL + '/' + interviewId
+        const url = process.env.NEXT_PUBLIC_INTERVIEW_URL + '/interview/' + interviewId
         return url
     }
 
