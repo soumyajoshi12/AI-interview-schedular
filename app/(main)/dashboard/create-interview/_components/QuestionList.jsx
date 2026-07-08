@@ -111,7 +111,7 @@ const QuestionList = ({ formData ,goToFinalStep}) => {
         </div>
       )}
 
-      <Button onClick={() => onFinish()} >Finish</Button>
+      <Button className='mt-2' onClick={() => onFinish()} >Finish</Button>
     </div>
   )
 }

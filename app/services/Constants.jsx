@@ -7,7 +7,7 @@ export const DashboardOptions = [
         path:'/dashboard'
     },
      {
-        name:'Schedule Interview',
+        name:'Scheduled Interview',
         icon:Calendar,
         path:'/schedule-interview'
     },
@@ -15,17 +15,7 @@ export const DashboardOptions = [
         name:'All Interviews',
         icon:List,
         path:'/all-interviews'
-    },
-     {
-        name:'Billing',
-        icon:WalletCards,
-        path:'/billing'
-    },
-     {
-        name:'Setting',
-        icon:Settings,
-        path:'/setting'
-    },
+    }
 ]
 
 export const JOB_TYPES = [
